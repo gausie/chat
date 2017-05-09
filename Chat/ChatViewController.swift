@@ -44,6 +44,15 @@ class ChatViewController: UIViewController {
     private(set) var tableView: UITableView?
     private(set) var fetchedResultsController: NSFetchedResultsController<Message>?
     
+    struct Change {
+        let type: NSFetchedResultsChangeType
+        let sectionIndex: Int?
+        let indexPath: IndexPath?
+        let newIndexPath: IndexPath?
+    }
+    
+    var changes: [Change] = []
+    
     override var navigationItem: UINavigationItem {
         let navigationItem = super.navigationItem
         
