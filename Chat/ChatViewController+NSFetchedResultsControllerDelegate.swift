@@ -35,37 +35,57 @@ extension ChatViewController: NSFetchedResultsControllerDelegate {
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         
+        guard let tableView = self.tableView else {
+            return
+        }
+        
         let block = {
-            self.tableView?.beginUpdates()
+            
+            tableView.beginUpdates()
+            
+            var offsetY: CGFloat = 0
             
             for change in self.changes {
                 if let sectionIndex = change.sectionIndex {
                     switch change.type {
                     case .delete:
-                        self.tableView?.deleteSections([sectionIndex], with: .none)
+                        tableView.deleteSections([sectionIndex], with: .none)
                     case .insert:
-                        self.tableView?.insertSections([sectionIndex], with: .none)
+                        tableView.insertSections([sectionIndex], with: .none)
                     case .move:
                         break
                     case .update:
-                        self.tableView?.reloadSections([sectionIndex], with: .none)
+                        tableView.reloadSections([sectionIndex], with: .none)
                     }
                 } else {
                     switch change.type {
                     case .delete:
-                        self.tableView?.deleteRows(at: [change.indexPath!], with: .none)
+                        tableView.deleteRows(at: [change.indexPath!], with: .none)
+                        offsetY -= self.tableView(tableView, heightForRowAt: change.indexPath!)
+                        
                     case .insert:
-                        self.tableView?.insertRows(at: [change.newIndexPath!], with: .none)
+                        tableView.insertRows(at: [change.newIndexPath!], with: .none)
+                        offsetY += self.tableView(tableView, heightForRowAt: change.newIndexPath!)
+                        
                     case .move:
-                        self.tableView?.deleteRows(at: [change.indexPath!], with: .none)
-                        self.tableView?.insertRows(at: [change.newIndexPath!], with: .none)
+                        tableView.deleteRows(at: [change.indexPath!], with: .none)
+                        offsetY -= self.tableView(tableView, heightForRowAt: change.indexPath!)
+                        
+                        tableView.insertRows(at: [change.newIndexPath!], with: .none)
+                        offsetY += self.tableView(tableView, heightForRowAt: change.newIndexPath!)
+                        
                     case .update:
-                        self.tableView?.reloadRows(at: [change.indexPath!], with: .none)
+                        tableView.reloadRows(at: [change.indexPath!], with: .none)
+                        // TODO: Calc height change between old and new for this row
                     }
                 }
             }
             
-            self.tableView?.endUpdates()
+            let originalContentOffset = tableView.contentOffset
+            let newContentOffset = CGPoint(x: originalContentOffset.x, y: originalContentOffset.y + offsetY)
+            tableView.contentOffset = newContentOffset
+            
+            tableView.endUpdates()
         }
         
         UIView.performWithoutAnimation(block)
