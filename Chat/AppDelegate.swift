@@ -21,9 +21,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         setup()
-        
-//        let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-//        let rootViewController = mainStoryboard.instantiateInitialViewController()
 
         let messageImporter = MessageImporter(label: "message.importer", persistentContainer: coreData!.persistentContainer!)
         
@@ -81,7 +78,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func loadedPersistentStores() {
         // Loaded core data persistent stores, safe to do other core data operations
-        print("Loaded persistent stores")
     }
     
     private func couldNotLoadPersistentStores() {
