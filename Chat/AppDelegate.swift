@@ -22,11 +22,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         setup()
         
-        let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
-        let rootViewController = mainStoryboard.instantiateInitialViewController()
+//        let mainStoryboard = UIStoryboard(name: "Main", bundle: Bundle.main)
+//        let rootViewController = mainStoryboard.instantiateInitialViewController()
+
+        let messageImporter = MessageImporter(label: "message.importer", persistentContainer: coreData!.persistentContainer!)
+        
+        let chatService = ChatService()
+        chatService.messageImporter = messageImporter
+        
+        let chatViewController = ChatViewController()
+        chatViewController.chatService = chatService
+        chatViewController.persistentContainer = coreData!.persistentContainer!
+        
+        let navigationController = UINavigationController(rootViewController: chatViewController)
         
         window = UIWindow()
-        window?.rootViewController = rootViewController
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         
         return true
@@ -52,6 +63,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        
+        coreData?.saveViewContext()
     }
 
     // MARK: - Private
@@ -68,6 +81,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private func loadedPersistentStores() {
         // Loaded core data persistent stores, safe to do other core data operations
+        print("Loaded persistent stores")
     }
     
     private func couldNotLoadPersistentStores() {

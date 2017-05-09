@@ -34,15 +34,27 @@ class CoreData {
         var d: NSPersistentStoreDescription? = description
         
         if d == nil {
+            
             let description = NSPersistentStoreDescription()
             description.configuration = "Default"
+            description.shouldAddStoreAsynchronously = true
+            description.isReadOnly = false
+            description.shouldInferMappingModelAutomatically = true
+            description.shouldMigrateStoreAutomatically = true
             
             switch storeType {
             case .InMemory:
                 description.type = NSInMemoryStoreType
+                
             case .SQLite:
+                
+                let storeDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+                let url = storeDirectory.appendingPathComponent("Chat.sqlite")
+                
                 description.type = NSSQLiteStoreType
+                description.url = url
             }
+            
             d = description
         }
         
@@ -51,6 +63,21 @@ class CoreData {
     
     deinit {
         
+    }
+    
+    func saveViewContext() {
+        
+        guard let persistentContainer = persistentContainer else {
+            return
+        }
+        
+        persistentContainer.viewContext.perform {
+            do {
+                try persistentContainer.viewContext.save()
+            } catch let error {
+                print("Error saving view context: \(error)")
+            }
+        }
     }
     
     // MARK: - Private
@@ -77,6 +104,7 @@ class CoreData {
                 print("Load persistent stores error: \(error), \(error.userInfo)")
             } else {
                 self?.loadPersistentStoresCompletionHandler(true)
+                container.viewContext.automaticallyMergesChangesFromParent = true
             }
         })
         return container
